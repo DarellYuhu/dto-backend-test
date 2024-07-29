@@ -1,0 +1,12 @@
+services:
+  db-test:
+    image: postgres:latest
+    env_file: .env.test
+    ports:
+      - ${POSTGRES_PORT}:5432
+
+  db-dev:
+    image: postgres:latest
+    env_file: .env.development
+    ports:
+      - ${POSTGRES_PORT}:5432
