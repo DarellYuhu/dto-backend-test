@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { PrismaService } from './prisma/prisma.service';
 import { PrismaModule } from './prisma/prisma.module';
+import { BookModule } from './book/book.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -12,6 +13,7 @@ import configuration from './config/configuration';
     ConfigModule.forRoot({ load: [configuration] }),
     AuthModule,
     PrismaModule,
+    BookModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

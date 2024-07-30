@@ -3,32 +3,35 @@ import { Test } from '@nestjs/testing';
 import { AuthModule } from 'src/auth/auth.module';
 import * as request from 'supertest';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { hash } from 'bcrypt';
+import { AuthService } from 'src/auth/auth.service';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { faker } from '@faker-js/faker';
 
 let app: INestApplication;
 let user: { username: string; password: string };
+const auth = new AuthService(
+  new PrismaService(),
+  new JwtService(),
+  new ConfigService(),
+);
 
 beforeAll(async () => {
   const moduleRef = await Test.createTestingModule({
     imports: [AuthModule],
-  })
-    .overrideModule(AuthModule)
-    .useModule(AuthModule)
-    .compile();
+  }).compile();
   app = moduleRef.createNestApplication();
   await app.init();
-  const prisma = new PrismaService();
 
-  const _user = await prisma.user.create({
-    data: {
-      username: 'dwaynephiliph',
-      password: await hash('123456', 10),
-      fullName: 'Dwayne Philiph',
-      email: 'dwaynephiliph@me.com',
-      address: '123 Main St, Anytown USA',
-    },
-  });
-  user = { username: _user.username, password: _user.password };
+  const payload = {
+    username: faker.internet.userName(),
+    password: faker.internet.password(),
+    fullName: faker.person.fullName(),
+    email: faker.internet.email(),
+    address: faker.location.streetAddress(),
+  };
+  await auth.signUp(payload);
+  user = { username: payload.username, password: payload.password };
 });
 
 afterAll(async () => {
@@ -38,11 +41,11 @@ afterAll(async () => {
 describe('Sign Up', () => {
   it('should sign up user successfully', async () => {
     const res = await request(app.getHttpServer()).post('/auth/signup').send({
-      username: 'johndoe',
-      password: '123456',
-      fullName: 'John Doe',
-      email: 'johndoe@me.com',
-      address: '123 Main St, Anytown USA',
+      username: faker.internet.userName(),
+      password: faker.internet.password(),
+      fullName: faker.person.fullName(),
+      email: faker.internet.email(),
+      address: faker.location.streetAddress(),
     });
     expect(res.status).toBe(201);
   });

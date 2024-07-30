@@ -1,6 +1,7 @@
+import { Prisma } from '@prisma/client';
 import { IsBoolean, IsEmail, IsOptional, IsString } from 'class-validator';
 
-export class SignUpAuthDto {
+export class SignUpAuthDto implements Prisma.UserUncheckedCreateInput {
   @IsString()
   username: string;
 
@@ -18,5 +19,6 @@ export class SignUpAuthDto {
   address?: string;
 
   @IsBoolean()
-  isAdmin: boolean;
+  @IsOptional()
+  isAdmin?: boolean;
 }

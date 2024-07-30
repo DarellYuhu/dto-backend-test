@@ -1,10 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { SignUpAuthDto } from './dto/signUp-auth.dto';
-import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SignInAuthDto } from './dto/signIn-auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { compare, hash } from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -15,11 +15,11 @@ export class AuthService {
   ) {}
 
   async signUp(signUpAuthDto: SignUpAuthDto) {
-    const hash = await bcrypt.hash(signUpAuthDto.password, 10);
+    const hashed = await hash(signUpAuthDto.password, 10);
     return await this.prisma.user.create({
       data: {
         ...signUpAuthDto,
-        password: hash,
+        password: hashed,
       },
     });
   }
@@ -28,8 +28,8 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: { username: signInAuthDto.username },
     });
-    const isValid = await bcrypt.compare(signInAuthDto.password, user.password);
-    if (isValid) {
+    const isValid = await compare(signInAuthDto.password, user.password);
+    if (!isValid) {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
     const payload = {
