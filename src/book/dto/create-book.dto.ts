@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { IsDateString, IsString } from 'class-validator';
+import { IsDate, IsDateString, IsString } from 'class-validator';
 
 export class CreateBookDto implements Prisma.BookUncheckedCreateInput {
   @IsString()
@@ -11,6 +11,6 @@ export class CreateBookDto implements Prisma.BookUncheckedCreateInput {
   @IsString()
   isbn: string;
 
-  @IsDateString()
-  publishedDate: string | Date;
+  @IsDate()
+  publishedDate: Date;
 }
