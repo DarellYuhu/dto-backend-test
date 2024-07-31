@@ -7,10 +7,10 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
-    "db:dev:up": "docker compose --env-file .env.development up -d db-dev",
+    "db:dev:up": "docker compose --env-file .env.development up -d db-dev && sleep 2 && dotenv -e .env.development -- npx prisma migrate deploy && npx prisma generate",
     "db:dev:down": "docker compose --env-file .env.development down",
     "db:test:up": "docker compose --env-file .env.test up -d db-test && sleep 2 && dotenv -e .env.test -- npx prisma migrate deploy && npx prisma generate",
-    "db:test:down": "docker compose --env-file .env.test down",
+    "db:test:down": "docker compose --env-file .env.test down db-test",
     "db:generate": "npx prisma generate",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
