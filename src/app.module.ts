@@ -3,7 +3,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
-import { PrismaService } from './prisma/prisma.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { BookModule } from './book/book.module';
 import { LoanModule } from './loan/loan.module';
@@ -18,7 +17,7 @@ import configuration from './config/configuration';
     LoanModule,
   ],
   controllers: [AppController],
-  providers: [AppService, PrismaService],
+  providers: [AppService],
   exports: [AppService],
 })
 export class AppModule {}

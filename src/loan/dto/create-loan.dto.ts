@@ -1,10 +1,16 @@
 import { Type } from 'class-transformer';
-import { ArrayMinSize, IsArray, IsDate, IsNumber } from 'class-validator';
+import {
+  ArrayMinSize,
+  IsArray,
+  IsDate,
+  IsDateString,
+  IsNumber,
+} from 'class-validator';
 
 class LoanType {
   @IsNumber()
   bookId: number;
-  @IsDate()
+  @IsDateString()
   dueDate: string | Date;
 }
 

@@ -11,13 +11,13 @@ export class LoanController {
   @Post(':userId')
   create(
     @Body() createLoanDto: CreateLoanDto,
-    @Param('userId') userId: number,
+    @Param('userId') userId: string,
   ) {
     return this.loanService.create(createLoanDto, +userId);
   }
 
   @Get('user/:userId')
-  findAllUserLoan(@Param('userId') userId: number) {
+  findAllUserLoan(@Param('userId') userId: string) {
     return this.loanService.findAllUserLoan(+userId);
   }
 

@@ -10,6 +10,7 @@ import { faker } from '@faker-js/faker';
 
 let app: INestApplication;
 let user: { username: string; password: string };
+let token: string;
 const auth = new AuthService(
   new PrismaService(),
   new JwtService(),
@@ -31,6 +32,11 @@ beforeAll(async () => {
     address: faker.location.streetAddress(),
   };
   await auth.signUp(payload);
+  const { token: _token } = await auth.signIn({
+    username: payload.username,
+    password: payload.password,
+  });
+  token = _token;
   user = { username: payload.username, password: payload.password };
 });
 
@@ -60,5 +66,19 @@ describe('Sign In', () => {
     expect(res.status).toBe(200);
     expect(typeof res.body.user.id).toBe('number');
     expect(typeof res.body.token).toBe('string');
+  });
+});
+
+describe('Protected route', () => {
+  it('should fail when token not provided', async () => {
+    const res = await request(app.getHttpServer()).get('/auth/protected-route');
+    expect(res.status).toBe(401);
+  });
+
+  it('should success when token not provided', async () => {
+    const res = await request(app.getHttpServer())
+      .get('/auth/protected-route')
+      .auth(token, { type: 'bearer' });
+    expect(res.status).toBe(200);
   });
 });
