@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaService } from './prisma/prisma.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { BookModule } from './book/book.module';
+import { LoanModule } from './loan/loan.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -14,6 +15,7 @@ import configuration from './config/configuration';
     AuthModule,
     PrismaModule,
     BookModule,
+    LoanModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

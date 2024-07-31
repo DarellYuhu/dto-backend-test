@@ -26,15 +26,15 @@ model User {
 }
 
 model Loan {
-  id         Int      @id @default(autoincrement())
-  User       User     @relation(fields: [userId], references: [id])
+  id         Int       @id @default(autoincrement())
+  User       User      @relation(fields: [userId], references: [id])
   userId     Int
-  Book       Book     @relation(fields: [bookId], references: [id])
+  Book       Book      @relation(fields: [bookId], references: [id])
   bookId     Int
-  loanDate   DateTime @default(now())
+  loanDate   DateTime  @default(now())
   dueDate    DateTime
-  returnDate DateTime
-  isReturned Boolean  @default(false)
+  returnDate DateTime?
+  isReturned Boolean   @default(false)
 }
 
 model Book {

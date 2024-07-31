@@ -28,7 +28,6 @@ beforeAll(async () => {
   }).compile();
   app = moduleRef.createNestApplication();
   await app.init();
-  await app.listen(3000);
 
   const password = '123456';
   const user = await authService.signUp({
