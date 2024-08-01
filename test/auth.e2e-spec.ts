@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AuthModule } from 'src/auth/auth.module';
 import * as request from 'supertest';
@@ -22,6 +22,7 @@ beforeAll(async () => {
     imports: [AuthModule],
   }).compile();
   app = moduleRef.createNestApplication();
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   await app.init();
 
   const payload = {
@@ -55,9 +56,43 @@ describe('Sign Up', () => {
     });
     expect(res.status).toBe(201);
   });
+
+  const cases = [
+    { key: 'username', _case: 'wrong typed', data: 123 },
+    { key: 'username', _case: 'not provided', data: undefined },
+    { key: 'password', _case: 'wrong typed', data: 123 },
+    { key: 'password', _case: 'not provided', data: undefined },
+    { key: 'fullName', _case: 'wrong typed', data: 123 },
+    { key: 'fullName', _case: 'not provided', data: undefined },
+    { key: 'email', _case: 'worng typed', data: 'yuhu' },
+    { key: 'email', _case: 'not provided', data: undefined },
+    { key: 'address', _case: 'wrong typed', data: 123 },
+    { key: 'address', _case: 'not provided', data: undefined },
+  ];
+  test.each(cases)(
+    'should fail sign up user when the $key is $_case',
+    async ({ key, data }) => {
+      const res = await request(app.getHttpServer())
+        .post('/auth/signup')
+        .send({
+          [key]: data,
+        });
+      expect(res.status).toBe(400);
+    },
+  );
 });
 
 describe('Sign In', () => {
+  it('should fail when the username or password is wront', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/auth/signin')
+      .send({
+        username: `${user.username}worng_username`,
+        password: user.password,
+      });
+    expect(res.status).toBe(401);
+  });
+
   it('should sign in user successfully', async () => {
     const res = await request(app.getHttpServer()).post('/auth/signin').send({
       username: user.username,

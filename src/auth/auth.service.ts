@@ -28,6 +28,9 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: { username: signInAuthDto.username },
     });
+    if (!user) {
+      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+    }
     const isValid = await compare(signInAuthDto.password, user.password);
     if (!isValid) {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
