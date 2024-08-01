@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { BookModule } from 'src/book/book.module';
 import { CreateBookDto } from 'src/book/dto/create-book.dto';
@@ -9,6 +9,7 @@ import { AuthService } from 'src/auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { BookService } from 'src/book/book.service';
+import { UpdateBookDto } from 'src/book/dto/update-book.dto';
 
 let app: INestApplication;
 let token: string;
@@ -27,6 +28,7 @@ beforeAll(async () => {
     imports: [BookModule],
   }).compile();
   app = moduleRef.createNestApplication();
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   await app.init();
 
   const password = '123456';
@@ -85,6 +87,11 @@ describe('Create', () => {
 });
 
 describe('Get all', () => {
+  it('should fail when token not provided', async () => {
+    const res = await request(app.getHttpServer()).get('/books');
+    expect(res.status).toBe(401);
+  });
+
   it('should all books', async () => {
     const res = await request(app.getHttpServer())
       .get('/books')
@@ -95,6 +102,25 @@ describe('Get all', () => {
 });
 
 describe('Get single book by id', () => {
+  it('should fail when token not provided', async () => {
+    const res = await request(app.getHttpServer()).get(`/books/${bookId}`);
+    expect(res.status).toBe(401);
+  });
+
+  it('should fail when resource not found', async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/books/${bookId}123`)
+      .auth(token, { type: 'bearer' });
+    expect(res.status).toBe(404);
+  });
+
+  it('should fail when param type is not number', async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/books/${bookId}-NOT-A-NUMBER`)
+      .auth(token, { type: 'bearer' });
+    expect(res.status).toBe(404);
+  });
+
   it('should get the book data', async () => {
     const res = await request(app.getHttpServer())
       .get(`/books/${bookId}`)
@@ -105,6 +131,40 @@ describe('Get single book by id', () => {
 });
 
 describe('Update book by id', () => {
+  it('should fail when token not provided', async () => {
+    const payload: UpdateBookDto = {
+      title: 'modified title',
+      author: 'modified author',
+      isbn: 'modified isbn',
+      publishedDate: new Date(),
+    };
+
+    const res = await request(app.getHttpServer())
+      .patch(`/books/${bookId}`)
+      .send(payload);
+    expect(res.status).toBe(401);
+  });
+
+  const failCases = [
+    { key: 'title', data: 123 },
+    { key: 'author', data: 123 },
+    { key: 'isbn', data: 123 },
+    { key: 'publishedDate', data: 123 },
+  ];
+  test.each(failCases)(
+    'should fail when the $key is wrong typed',
+    async ({ key, data }) => {
+      const payload: UpdateBookDto = {
+        [key]: data,
+      };
+      const res = await request(app.getHttpServer())
+        .patch(`/books/${bookId}`)
+        .send(payload)
+        .auth(token, { type: 'bearer' });
+      expect(res.status).toBe(400);
+    },
+  );
+
   const cases = [
     { label: 'title', data: 'modified title' },
     { label: 'author', data: 'modified author' },
@@ -112,7 +172,7 @@ describe('Update book by id', () => {
     { label: 'publishedDate', data: new Date().toISOString() },
     { label: 'isAvailable', data: false },
   ];
-  test.each(cases)('should update book successfully $label', async (cases) => {
+  test.each(cases)('should update book $label successfully', async (cases) => {
     const payload = {
       [cases.label]: cases.data,
     };
@@ -122,5 +182,27 @@ describe('Update book by id', () => {
       .auth(token, { type: 'bearer' });
     expect(res.status).toBe(200);
     expect(res.body[cases.label]).toBe(cases.data);
+  });
+});
+
+describe('Delete book by id', () => {
+  it('should successfully delete the book', async () => {
+    const res = await request(app.getHttpServer())
+      .delete(`/books/${bookId}`)
+      .auth(token, { type: 'bearer' });
+    expect(res.status).toBe(200);
+    expect(typeof res.body.id).toBe('number');
+  });
+
+  it('should fail delete due to authentication', async () => {
+    const res = await request(app.getHttpServer()).delete(`/books/${bookId}`);
+    expect(res.status).toBe(401);
+  });
+
+  it('should fail due to not exist book', async () => {
+    const res = await request(app.getHttpServer())
+      .delete(`/books/${bookId}8347`)
+      .auth(token, { type: 'bearer' });
+    expect(res.status).toBe(404);
   });
 });

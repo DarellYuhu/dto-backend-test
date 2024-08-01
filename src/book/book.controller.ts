@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   UseGuards,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { BookService } from './book.service';
 import { CreateBookDto } from './dto/create-book.dto';
@@ -29,8 +31,11 @@ export class BookController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.bookService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    if (isNaN(+id)) throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
+    const data = await this.bookService.findOne(+id);
+    if (!data) throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
+    return data;
   }
 
   @Patch(':id')
@@ -39,7 +44,13 @@ export class BookController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.bookService.remove(+id);
+  async remove(@Param('id') id: string) {
+    try {
+      return await this.bookService.remove(+id);
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+      }
+    }
   }
 }
