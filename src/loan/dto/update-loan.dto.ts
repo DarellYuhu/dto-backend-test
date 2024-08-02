@@ -1,15 +1,15 @@
 import { Prisma } from '@prisma/client';
-import { IsBoolean, IsDate, IsOptional } from 'class-validator';
+import { IsBoolean, IsDateString, IsOptional } from 'class-validator';
 
 export class UpdateLoanDto implements Prisma.LoanUpdateInput {
-  @IsDate()
+  @IsDateString()
   @IsOptional()
   returnDate?:
     | string
     | Date
     | Prisma.NullableDateTimeFieldUpdateOperationsInput;
 
-  @IsDate()
+  @IsDateString()
   @IsOptional()
   dueDate?: string | Date | Prisma.DateTimeFieldUpdateOperationsInput;
 

@@ -1,9 +1,6 @@
-import { Type } from 'class-transformer';
-import { ArrayMinSize, IsArray } from 'class-validator';
+import { IsNumber } from 'class-validator';
 
 export class ReturnLoanDto {
-  @IsArray()
-  @ArrayMinSize(1)
-  @Type(() => Number)
+  @IsNumber({}, { each: true })
   id: number[];
 }
