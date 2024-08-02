@@ -9,6 +9,7 @@ import {
   UseGuards,
   HttpException,
   HttpStatus,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { BookService } from './book.service';
 import { CreateBookDto } from './dto/create-book.dto';
@@ -31,8 +32,7 @@ export class BookController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    if (isNaN(+id)) throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
+  async findOne(@Param('id', ParseIntPipe) id: string) {
     const data = await this.bookService.findOne(+id);
     if (!data) throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
     return data;

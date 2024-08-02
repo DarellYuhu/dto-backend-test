@@ -42,6 +42,7 @@ export class AuthService {
     delete user.password;
     const token = this.jwt.sign(payload, {
       secret: this.config.get<string>('SECRET_KEY'),
+      expiresIn: '1d',
     });
     return { user, token };
   }

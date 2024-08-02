@@ -118,7 +118,7 @@ describe('Get single book by id', () => {
     const res = await request(app.getHttpServer())
       .get(`/books/${bookId}-NOT-A-NUMBER`)
       .auth(token, { type: 'bearer' });
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(400);
   });
 
   it('should get the book data', async () => {
